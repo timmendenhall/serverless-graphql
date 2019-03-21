@@ -4,9 +4,6 @@ const { buildSchema } = require('graphql');
 const jwt = require('express-jwt');
 const Firestore = require('@google-cloud/firestore');
 
-// Load the environment file based on NODE_ENV
-require('custom-env').env(true);
-
 const firestore = new Firestore({
     projectId: process.env.PROJECT_ID,
     timestampsInSnapshots: true,
@@ -62,12 +59,12 @@ const root = {
 };
 
 app.use('/',
-    jwt({secret: process.env.JWT_SHARED_SECRET}),
+    // jwt({secret: process.env.JWT_SHARED_SECRET}),
     graphqlHTTP({
     schema: schema,
     rootValue: root,
     graphiql: true,
-    // graphiql: process.env.NODE_ENV === 'development',
+    // graphiql: process.env.ENVIRONMENT_NAME !== 'production',
 }));
 
 /**
