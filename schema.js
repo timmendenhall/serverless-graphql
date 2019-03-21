@@ -1,3 +1,7 @@
+const { buildSchema } = require('graphql');
+
+// Construct a schema, using GraphQL schema language
+const schema = buildSchema(`
 type Query {
     feedbacks: [Feedback!]!
     feedback(id: ID!): Feedback
@@ -28,3 +32,6 @@ type Feedback {
     comment: String!
     author: User!
 }
+`);
+
+module.exports.schema = schema;
