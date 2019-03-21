@@ -4,12 +4,15 @@
   "description": "The aim of this project is to show off a simple way to place a GraphQL front end over a GCP datastore all with serverless technology.",
   "main": "index.js",
   "dependencies": {
+    "@google-cloud/datastore": "^3.1.2",
     "@google-cloud/firestore": "1.1.0",
     "express": "^4.16.4",
     "express-graphql": "^0.7.1",
     "express-jwt": "^5.3.1",
+    "firebase-admin": "^7.1.1",
     "firebase-functions": "^2.2.0",
-    "graphql": "^14.1.1"
+    "graphql": "^14.1.1",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {},
   "scripts": {

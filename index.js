@@ -1,42 +1,61 @@
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
-const jwt = require('express-jwt');
-const Firestore = require('@google-cloud/firestore');
+// const jwt = require('express-jwt');
+const uuidv1 = require('uuid/v1');
+// By default, the client will authenticate using the service account file
+// specified by the GOOGLE_APPLICATION_CREDENTIALS environment variable and use
+// the project specified by the GOOGLE_CLOUD_PROJECT environment variable. See
+// https://github.com/GoogleCloudPlatform/google-cloud-node/blob/master/docs/authentication.md
+// These environment variables are set automatically on Google App Engine
+const { Datastore } = require('@google-cloud/datastore');
 const { schema } = require('./schema.js');
-
-const firestore = new Firestore({
-    projectId: process.env.PROJECT_ID,
-    timestampsInSnapshots: true,
-});
 
 // Init express
 const app = express();
 
+const datastore = new Datastore({
+    projectId: process.env.GOOGLE_CLOUD_PROJECT,
+});
+
+class User {
+    constructor(name, email, password) {
+        this.id = uuidv1();
+        this.name = name;
+        this.email = email;
+        this.password = password;
+    }
+}
+
 // The root provides a resolver function for each API endpoint
 const root = {
-    Query: {
-        feedbacks: (obj, args, context, info) => {
-            return [
-                {
-                    id: 'id1',
-                    rating: 5,
-                    comment: 'Hello comment'
-                },
-                {
-                    id: 'id2',
-                    rating: 4,
-                    comment: 'Hello comment again'
-                }
-            ];
-        },
-        feedback: (obj, args, context, info) => {
-            return {
-                id: 'id1',
-                rating: 5,
-                comment: 'Hello comment'
-            };
-        }
+
+    feedbacks: (obj, args) => {
+        return [];
     },
+    feedback: (obj, args) => {
+        return null;
+    },
+    // Old object / args, but, name/email/password comes in first here
+    signup: ({name, email, password}, _) => {
+        // The kind for the new entity
+        const kind = 'User';
+        // The Cloud Datastore key for the new entity
+        const taskKey = datastore.key([kind]);
+
+        // Prepares the new entity
+        const user = {
+            key: taskKey,
+            data: {
+                name,
+                email,
+                password
+            }
+        };
+
+        return datastore.save(user).then((user) => {
+            return new User(name, email, password);
+        });
+    }
 };
 
 app.use('',
@@ -48,10 +67,4 @@ app.use('',
     // graphiql: process.env.ENVIRONMENT_NAME !== 'production',
 }));
 
-/**
- * Responds to any HTTP request.
- *
- * @param {!express:Request} req HTTP request context.
- * @param {!express:Response} res HTTP response context.
- */
 exports.graphql = app;

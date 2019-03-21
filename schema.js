@@ -6,10 +6,11 @@ type Query {
     feedbacks: [Feedback!]!
     feedback(id: ID!): Feedback
     me: User
+    users: [User!]
 }
 
 type Mutation {
-    signup(email: String!, password: String!, name: String!): AuthPayload!
+    signup(email: String!, password: String!, name: String!): User!
     login(email: String!, password: String!): AuthPayload!
     createFeedback(rating: Int!, comment: String!): Feedback!
 }
