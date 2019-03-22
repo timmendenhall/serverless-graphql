@@ -25,7 +25,7 @@ class User {
     }
 }
 
-const addNewEntity = ({data, kind}) => {
+const addNewEntity = async ({data, kind}) => {
     // The Cloud Datastore key for the new entity
     const taskKey = datastore.key([kind]);
 
@@ -35,10 +35,9 @@ const addNewEntity = ({data, kind}) => {
         data
     };
 
-    return datastore.save(entity).then((entity) => {
-        // Return the new ID
-        return entity[0].mutationResults[0].key.path[0].id;
-    });
+    const result = await datastore.save(entity);
+    // Return the new ID
+    return result[0].mutationResults[0].key.path[0].id;
 };
 
 // The root provides a resolver function for each API endpoint
@@ -50,13 +49,13 @@ const root = {
         return null;
     },
     // Old object / args, but, name/email/password comes in first here
-    signup: ({name, email, password}, _) => {
-        return addNewEntity({
+    signup: async ({name, email, password}, _) => {
+        const id = await addNewEntity({
             data: {name, email, password},
             kind: 'User'
-        }).then((userId) => {
-            return new User(userId, name, email, password);
         });
+
+        return new User(id, name, email, password);
     }
 };
 

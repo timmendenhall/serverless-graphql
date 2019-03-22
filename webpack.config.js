@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const CopyPlugin = require('copy-webpack-plugin');
 module.exports = {
-    entry: './src/index.js',
+    entry: ['@babel/polyfill', './src/index.js'],
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'index.js'
