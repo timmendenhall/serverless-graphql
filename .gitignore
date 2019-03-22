@@ -3,3 +3,5 @@ node_modules
 !.env.example.yaml
 .idea/
 credentials.json
+dist/
+npm-debug.log

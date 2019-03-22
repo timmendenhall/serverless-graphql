@@ -35,4 +35,4 @@ type Feedback {
 }
 `);
 
-module.exports.schema = schema;
+export default schema;

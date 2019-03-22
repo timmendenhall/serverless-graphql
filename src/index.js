@@ -1,13 +1,13 @@
-const express = require('express');
-const graphqlHTTP = require('express-graphql');
+import express from 'express';
+import graphqlHTTP from 'express-graphql';
 // const jwt = require('express-jwt');
 // By default, the client will authenticate using the service account file
 // specified by the GOOGLE_APPLICATION_CREDENTIALS environment variable and use
 // the project specified by the GOOGLE_CLOUD_PROJECT environment variable. See
 // https://github.com/GoogleCloudPlatform/google-cloud-node/blob/master/docs/authentication.md
 // These environment variables are set automatically on Google App Engine
-const { Datastore } = require('@google-cloud/datastore');
-const { schema } = require('./schema.js');
+import { Datastore } from '@google-cloud/datastore';
+import schema from './schema.js';
 
 // Init express
 const app = express();
