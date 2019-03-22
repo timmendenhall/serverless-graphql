@@ -1,7 +1,6 @@
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
 // const jwt = require('express-jwt');
-const uuidv1 = require('uuid/v1');
 // By default, the client will authenticate using the service account file
 // specified by the GOOGLE_APPLICATION_CREDENTIALS environment variable and use
 // the project specified by the GOOGLE_CLOUD_PROJECT environment variable. See
@@ -18,17 +17,32 @@ const datastore = new Datastore({
 });
 
 class User {
-    constructor(name, email, password) {
-        this.id = uuidv1();
+    constructor(id, name, email, password) {
+        this.id = id;
         this.name = name;
         this.email = email;
         this.password = password;
     }
 }
 
+const addNewEntity = ({data, kind}) => {
+    // The Cloud Datastore key for the new entity
+    const taskKey = datastore.key([kind]);
+
+    // Prepares the new entity
+    const entity = {
+        key: taskKey,
+        data
+    };
+
+    return datastore.save(entity).then((entity) => {
+        // Return the new ID
+        return entity[0].mutationResults[0].key.path[0].id;
+    });
+};
+
 // The root provides a resolver function for each API endpoint
 const root = {
-
     feedbacks: (obj, args) => {
         return [];
     },
@@ -37,23 +51,11 @@ const root = {
     },
     // Old object / args, but, name/email/password comes in first here
     signup: ({name, email, password}, _) => {
-        // The kind for the new entity
-        const kind = 'User';
-        // The Cloud Datastore key for the new entity
-        const taskKey = datastore.key([kind]);
-
-        // Prepares the new entity
-        const user = {
-            key: taskKey,
-            data: {
-                name,
-                email,
-                password
-            }
-        };
-
-        return datastore.save(user).then((user) => {
-            return new User(name, email, password);
+        return addNewEntity({
+            data: {name, email, password},
+            kind: 'User'
+        }).then((userId) => {
+            return new User(userId, name, email, password);
         });
     }
 };
