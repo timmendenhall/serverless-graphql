@@ -40,6 +40,19 @@ const addNewEntity = async ({data, kind}) => {
     return result[0].mutationResults[0].key.path[0].id;
 };
 
+const getAllEntities = async ({kind}) => {
+    const query = datastore
+        .createQuery(kind)
+        // .limit(5);
+        // .filter('thing', '=', false)
+        // .order('created')
+
+    const entities = await datastore.runQuery(query);
+
+    // First element is results, second is response data
+    return entities[0];
+};
+
 // The root provides a resolver function for each API endpoint
 const root = {
     feedbacks: (obj, args) => {
@@ -56,6 +69,12 @@ const root = {
         });
 
         return new User(id, name, email, password);
+    },
+    users: async (obj, args) => {
+        const users = await getAllEntities({kind: 'User'});
+        return users.map(user => {
+            return new User(user[datastore.KEY].id, user.name, user.email, user.password);
+        });
     }
 };
 
