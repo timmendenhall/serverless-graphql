@@ -43,8 +43,17 @@ export const getOne = async ({kind, byProperty, byValue}) => {
 
     const entities = await datastore.runQuery(query);
 
+    // attach the id as a regular property
+    const entityArray = entities[0];
+    let entity;
+
+    if (entityArray && entityArray.length > 0) {
+        entity = entityArray[0];
+        entity.id = entity[datastore.KEY].id;
+    }
+
     // First element is results, second is response data
-    return entities[0];
+    return entity;
 };
 
 export const getOneById = async ({kind, id}) => {
