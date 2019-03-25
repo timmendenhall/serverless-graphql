@@ -7,6 +7,7 @@ import graphqlHTTP from 'express-graphql';
 // https://github.com/GoogleCloudPlatform/google-cloud-node/blob/master/docs/authentication.md
 // These environment variables are set automatically on Google App Engine
 import { Datastore } from '@google-cloud/datastore';
+import crypto from 'crypto';
 import schema from './schema.js';
 
 // Init express
@@ -17,12 +18,28 @@ const datastore = new Datastore({
 });
 
 class User {
-    constructor(id, name, email, password) {
+    constructor(id, name, email, password, hash, salt) {
         this.id = id;
         this.name = name;
         this.email = email;
-        this.password = password;
+
+        if (password) {
+            this.setPassword(password);
+        } else if (hash && salt) {
+            this.hash = hash;
+            this.salt = salt;
+        }
     }
+
+    setPassword(password) {
+        this.salt = crypto.randomBytes(16).toString('hex');
+        this.hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex');
+    }
+
+    validatePassword(password) {
+        const hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex');
+        return this.hash === hash;
+    };
 }
 
 const addNewEntity = async ({data, kind}) => {
@@ -42,7 +59,7 @@ const addNewEntity = async ({data, kind}) => {
 
 const getAllEntities = async ({kind}) => {
     const query = datastore
-        .createQuery(kind)
+        .createQuery(kind);
         // .limit(5);
         // .filter('thing', '=', false)
         // .order('created')
@@ -63,17 +80,19 @@ const root = {
     },
     // Old object / args, but, name/email/password comes in first here
     signup: async ({name, email, password}, _) => {
+        const user = new User(null, name, email, password);
         const id = await addNewEntity({
-            data: {name, email, password},
+            data: {name, email, hash: user.hash, salt: user.salt},
             kind: 'User'
         });
+        user.id = id;
 
-        return new User(id, name, email, password);
+        return user;
     },
     users: async (obj, args) => {
         const users = await getAllEntities({kind: 'User'});
         return users.map(user => {
-            return new User(user[datastore.KEY].id, user.name, user.email, user.password);
+            return new User(user[datastore.KEY].id, user.name, user.email, null, user.hash, user.salt);
         });
     }
 };

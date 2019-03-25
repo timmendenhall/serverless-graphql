@@ -8,6 +8,7 @@
     "@babel/polyfill": "^7.4.0",
     "@google-cloud/datastore": "^3.1.2",
     "core-js": "^3.0.0",
+    "crypto": "^1.0.1",
     "express": "^4.16.4",
     "express-graphql": "^0.7.1",
     "express-jwt": "^5.3.1",
@@ -26,7 +27,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy:production": "gcloud functions deploy graphql --source=./ --env-vars-file .env.production.yaml --runtime nodejs6 --trigger-http",
     "deploy:development": "gcloud functions deploy graphql --source=./ --env-vars-file .env.example.yaml --runtime nodejs6 --trigger-http",
-    "build:production": "webpack --config webpack.config.js"
+    "build:production": "webpack --config webpack.config.js",
+    "deploy": "npm run --prefix dist deploy:production",
+    "buildAndDeploy": "npm run build:production && npm run deploy"
   },
   "author": "",
   "license": "ISC"
